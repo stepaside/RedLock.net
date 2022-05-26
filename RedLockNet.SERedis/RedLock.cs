@@ -157,7 +157,7 @@ namespace RedLockNet.SERedis
 
 					if (!IsAcquired)
 					{
-						TaskUtils.Delay(retryTime.Value, cancellationToken).Wait(cancellationToken);
+						Thread.Sleep(retryTime.Value);
 					}
 				}
 				// ReSharper restore PossibleInvalidOperationException
@@ -383,10 +383,17 @@ namespace RedLockNet.SERedis
 		{
 			var lockResults = new ConcurrentBag<RedLockInstanceResult>();
 
-			Parallel.ForEach(redisCaches, cache =>
+			if (redisCaches.Count == 1)
 			{
-				lockResults.Add(LockInstance(cache));
-			});
+				lockResults.Add(LockInstance(redisCaches.First()));
+			}
+			else 
+			{
+				Parallel.ForEach(redisCaches, cache =>
+				{
+					lockResults.Add(LockInstance(cache));
+				});
+			}
 
 			return PopulateRedLockResult(lockResults);
 		}
@@ -404,10 +411,17 @@ namespace RedLockNet.SERedis
 		{
 			var extendResults = new ConcurrentBag<RedLockInstanceResult>();
 
-			Parallel.ForEach(redisCaches, cache =>
+			if (redisCaches.Count == 1)
 			{
-				extendResults.Add(ExtendInstance(cache));
-			});
+				extendResults.Add(ExtendInstance(redisCaches.First()));
+			}
+			else
+			{
+				Parallel.ForEach(redisCaches, cache =>
+				{
+					extendResults.Add(ExtendInstance(cache));
+				});
+			}
 
 			return PopulateRedLockResult(extendResults);
 		}
@@ -418,7 +432,14 @@ namespace RedLockNet.SERedis
 			extendUnlockSemaphore.Wait();
 			try
 			{
-				Parallel.ForEach(redisCaches, UnlockInstance);
+				if (redisCaches.Count == 1)
+				{
+					UnlockInstance(redisCaches.First());
+				}
+				else
+				{
+					Parallel.ForEach(redisCaches, UnlockInstance);
+				}
 			}
 			finally
 			{
@@ -593,7 +614,7 @@ namespace RedLockNet.SERedis
 
 				result.Append(server.EndPoint.GetFriendlyName());
 				result.Append(" (");
-				result.Append(server.IsSlave ? "slave" : "master");
+				result.Append(server.IsReplica ? "replica" : "master");
 				result.Append(server.IsConnected ? "" : ", disconnected");
 				result.Append("), ");
 			}
