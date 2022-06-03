@@ -240,7 +240,7 @@ namespace RedLockNet.SERedis
 
 					logger.LogDebug($"Sleeping {sleepMs}ms");
 
-					TaskUtils.Delay(sleepMs, cancellationToken).Wait(cancellationToken);
+					Thread.Sleep(sleepMs);
 				}
 			}
 
