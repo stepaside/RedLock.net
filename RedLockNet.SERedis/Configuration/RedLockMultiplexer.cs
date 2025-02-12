@@ -8,7 +8,7 @@ namespace RedLockNet.SERedis.Configuration
 
 		public RedLockMultiplexer(IConnectionMultiplexer connectionMultiplexer)
 		{
-			this.ConnectionMultiplexer = connectionMultiplexer;
+			ConnectionMultiplexer = connectionMultiplexer;
 		}
 
 		public static implicit operator RedLockMultiplexer(ConnectionMultiplexer connectionMultiplexer)

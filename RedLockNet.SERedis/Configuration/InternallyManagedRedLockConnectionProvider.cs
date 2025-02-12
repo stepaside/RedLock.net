@@ -13,10 +13,10 @@ namespace RedLockNet.SERedis.Configuration
 	/// </summary>
 	public class InternallyManagedRedLockConnectionProvider : RedLockConnectionProvider
 	{
-		private readonly ILoggerFactory loggerFactory;
+		private readonly ILoggerFactory _loggerFactory;
 		public IList<RedLockEndPoint> EndPoints { get; set; }
 
-		private ICollection<RedisConnection> connections;
+		private ICollection<RedisConnection> _connections;
 
 		private const int DefaultConnectionTimeout = 100;
 		private const int DefaultSyncTimeout = 1000;
@@ -24,23 +24,23 @@ namespace RedLockNet.SERedis.Configuration
 
 		public InternallyManagedRedLockConnectionProvider(ILoggerFactory loggerFactory = null)
 		{
-			this.loggerFactory = loggerFactory ?? new LoggerFactory();
+			_loggerFactory = loggerFactory ?? new NullLoggerFactory();
 
-			this.EndPoints = new List<RedLockEndPoint>();
+			EndPoints = new List<RedLockEndPoint>();
 		}
 
 		internal override ICollection<RedisConnection> CreateRedisConnections()
 		{
-			if (this.EndPoints == null || !this.EndPoints.Any())
+			if (EndPoints == null || !	EndPoints.Any())
 			{
 				throw new ArgumentException("No endpoints specified");
 			}
 
-			var logger = loggerFactory.CreateLogger<InternallyManagedRedLockConnectionProvider>();
+			var logger = _loggerFactory.CreateLogger<InternallyManagedRedLockConnectionProvider>();
 
-			connections = new List<RedisConnection>(this.EndPoints.Count);
+			_connections = new List<RedisConnection>(EndPoints.Count);
 
-			foreach (var endPoint in this.EndPoints)
+			foreach (var endPoint in EndPoints)
 			{
 				var redisConfig = new ConfigurationOptions
 				{
@@ -90,15 +90,15 @@ namespace RedLockNet.SERedis.Configuration
 					logger.LogWarning($"ErrorMessage: {args.EndPoint.GetFriendlyName()} Message: {args.Message}");
 				};
 
-				connections.Add(redisConnection);
+				_connections.Add(redisConnection);
 			}
 
-			return connections;
+			return _connections;
 		}
 
 		internal override void DisposeConnections()
 		{
-			foreach (var connection in this.connections)
+			foreach (var connection in _connections)
 			{
 				connection.ConnectionMultiplexer.Dispose();
 			}

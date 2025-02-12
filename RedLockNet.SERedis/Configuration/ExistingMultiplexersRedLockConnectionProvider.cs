@@ -14,19 +14,19 @@ namespace RedLockNet.SERedis.Configuration
 
 		public ExistingMultiplexersRedLockConnectionProvider()
 		{
-			this.Multiplexers = new List<RedLockMultiplexer>();
+			Multiplexers = new List<RedLockMultiplexer>();
 		}
 
 		internal override ICollection<RedisConnection> CreateRedisConnections()
 		{
-			if (this.Multiplexers == null || !this.Multiplexers.Any())
+			if (Multiplexers == null || !Multiplexers.Any())
 			{
 				throw new ArgumentException("No multiplexers specified");
 			}
 
-			var connections = new List<RedisConnection>(this.Multiplexers.Count);
+			var connections = new List<RedisConnection>(Multiplexers.Count);
 
-			foreach (var multiplexer in this.Multiplexers)
+			foreach (var multiplexer in Multiplexers)
 			{
 				// TODO check that the ConnectionMultiplexer has reasonable settings (e.g. AbortOnConnectFail == false)
 

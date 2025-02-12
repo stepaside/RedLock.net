@@ -1,7 +1,7 @@
 <Project>
 	<PropertyGroup>
-		<AssemblyVersion>2.3.4.0</AssemblyVersion>
-		<Version>2.3.4</Version>
+		<AssemblyVersion>2.3.5.0</AssemblyVersion>
+		<Version>2.3.5</Version>
 		<FileVersion>$(Version)</FileVersion>
 		<Authors>Sam Cook</Authors>
 		<Company />

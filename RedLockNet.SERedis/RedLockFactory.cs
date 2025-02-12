@@ -4,17 +4,18 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using RedLockNet.SERedis.Configuration;
 using RedLockNet.SERedis.Events;
 using RedLockNet.SERedis.Internal;
 
 namespace RedLockNet.SERedis
 {
-	public class RedLockFactory : IDistributedLockFactory, IDisposable
+    public class RedLockFactory : IDistributedLockFactory, IDisposable
 	{
-		private readonly RedLockConfiguration configuration;
-		private readonly ILoggerFactory loggerFactory;
-		private readonly ICollection<RedisConnection> redisCaches;
+		private readonly RedLockConfiguration _configuration;
+		private readonly ILoggerFactory _loggerFactory;
+		private readonly ICollection<RedisConnection> _redisCaches;
 
 		public event EventHandler<RedLockConfigurationChangedEventArgs> ConfigurationChanged;
 
@@ -69,16 +70,16 @@ namespace RedLockNet.SERedis
 		/// </summary>
 		public RedLockFactory(RedLockConfiguration configuration)
 		{
-			this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration), "Configuration must not be null");
-			this.loggerFactory = configuration.LoggerFactory ?? new LoggerFactory();
-			this.redisCaches = configuration.ConnectionProvider.CreateRedisConnections();
+			_configuration = configuration ?? throw new ArgumentNullException(nameof(configuration), "Configuration must not be null");
+			_loggerFactory = configuration.LoggerFactory;
+			_redisCaches = configuration.ConnectionProvider.CreateRedisConnections();
 
 			SubscribeToConnectionEvents();
 		}
 
 		private void SubscribeToConnectionEvents()
 		{
-			foreach (var cache in this.redisCaches)
+			foreach (var cache in _redisCaches)
 			{
 				cache.ConnectionMultiplexer.ConfigurationChanged += MultiplexerConfigurationChanged;
 			}
@@ -86,7 +87,7 @@ namespace RedLockNet.SERedis
 
 		private void UnsubscribeFromConnectionEvents()
 		{
-			foreach (var cache in this.redisCaches)
+			foreach (var cache in _redisCaches)
 			{
 				cache.ConnectionMultiplexer.ConfigurationChanged -= MultiplexerConfigurationChanged;
 			}
@@ -100,46 +101,46 @@ namespace RedLockNet.SERedis
 		public IRedLock CreateLock(string resource, TimeSpan expiryTime)
 		{
 			return RedLock.Create(
-				this.loggerFactory.CreateLogger<RedLock>(),
-				redisCaches,
+				_loggerFactory.CreateLogger<RedLock>(),
+				_redisCaches,
 				resource,
 				expiryTime,
-				retryConfiguration: configuration.RetryConfiguration);
+				retryConfiguration: _configuration.RetryConfiguration);
 		}
 
 		public async Task<IRedLock> CreateLockAsync(string resource, TimeSpan expiryTime)
 		{
 			return await RedLock.CreateAsync(
-				this.loggerFactory.CreateLogger<RedLock>(),
-				redisCaches,
+				_loggerFactory.CreateLogger<RedLock>(),
+				_redisCaches,
 				resource,
 				expiryTime,
-				retryConfiguration: configuration.RetryConfiguration).ConfigureAwait(false);
+				retryConfiguration: _configuration.RetryConfiguration).ConfigureAwait(false);
 		}
 
 		public IRedLock CreateLock(string resource, TimeSpan expiryTime, TimeSpan waitTime, TimeSpan retryTime, CancellationToken? cancellationToken = null)
 		{
 			return RedLock.Create(
-				this.loggerFactory.CreateLogger<RedLock>(),
-				redisCaches,
+				_loggerFactory.CreateLogger<RedLock>(),
+				_redisCaches,
 				resource,
 				expiryTime,
 				waitTime,
 				retryTime,
-				configuration.RetryConfiguration,
+				_configuration.RetryConfiguration,
 				cancellationToken ?? CancellationToken.None);
 		}
 
 		public async Task<IRedLock> CreateLockAsync(string resource, TimeSpan expiryTime, TimeSpan waitTime, TimeSpan retryTime, CancellationToken? cancellationToken = null)
 		{
 			return await RedLock.CreateAsync(
-				this.loggerFactory.CreateLogger<RedLock>(),
-				redisCaches,
+				_loggerFactory.CreateLogger<RedLock>(),
+				_redisCaches,
 				resource,
 				expiryTime,
 				waitTime,
 				retryTime,
-				configuration.RetryConfiguration,
+				_configuration.RetryConfiguration,
 				cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
 		}
 
@@ -147,7 +148,7 @@ namespace RedLockNet.SERedis
 		{
 			UnsubscribeFromConnectionEvents();
 
-			this.configuration.ConnectionProvider.DisposeConnections();
+			_configuration.ConnectionProvider.DisposeConnections();
 		}
 
 		protected virtual void RaiseConfigurationChanged()
@@ -159,7 +160,7 @@ namespace RedLockNet.SERedis
 
 			var connections = new List<Dictionary<EndPoint, RedLockConfigurationChangedEventArgs.RedLockEndPointStatus>>();
 
-			foreach (var cache in this.redisCaches)
+			foreach (var cache in _redisCaches)
 			{
 				var endPointStatuses = new Dictionary<EndPoint, RedLockConfigurationChangedEventArgs.RedLockEndPointStatus>();
 

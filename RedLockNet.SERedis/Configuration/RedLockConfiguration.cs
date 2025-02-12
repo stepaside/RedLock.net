@@ -8,17 +8,17 @@ namespace RedLockNet.SERedis.Configuration
 	{
 		public RedLockConfiguration(IList<RedLockEndPoint> endPoints, ILoggerFactory loggerFactory = null)
 		{
-			this.ConnectionProvider = new InternallyManagedRedLockConnectionProvider(loggerFactory)
+			ConnectionProvider = new InternallyManagedRedLockConnectionProvider(loggerFactory ?? new NullLoggerFactory())
 			{
 				EndPoints = endPoints
 			};
-			this.LoggerFactory = loggerFactory;
+			LoggerFactory = loggerFactory ?? new NullLoggerFactory();
 		}
 
 		public RedLockConfiguration(RedLockConnectionProvider connectionProvider, ILoggerFactory loggerFactory = null)
 		{
-			this.ConnectionProvider = connectionProvider ?? throw new ArgumentNullException(nameof(connectionProvider), "Connection provider must not be null");
-			this.LoggerFactory = loggerFactory;
+			ConnectionProvider = connectionProvider ?? throw new ArgumentNullException(nameof(connectionProvider), "Connection provider must not be null");
+			LoggerFactory = loggerFactory ?? new NullLoggerFactory();
 		}
 
 		public RedLockConnectionProvider ConnectionProvider { get; }

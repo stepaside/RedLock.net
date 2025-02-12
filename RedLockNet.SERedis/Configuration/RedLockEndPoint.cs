@@ -18,7 +18,7 @@ namespace RedLockNet.SERedis.Configuration
 		/// <param name="endPoint"></param>
 		public RedLockEndPoint(EndPoint endPoint)
 		{
-			this.EndPoint = endPoint;
+			EndPoint = endPoint;
 		}
 
 		/// <summary>
@@ -28,7 +28,7 @@ namespace RedLockNet.SERedis.Configuration
 		/// </summary>
 		public RedLockEndPoint(IList<EndPoint> endPoints)
 		{
-			this.EndPoints = endPoints ?? new List<EndPoint>();
+			EndPoints = endPoints ?? new List<EndPoint>();
 		}
 
 		public static implicit operator RedLockEndPoint(EndPoint endPoint)
